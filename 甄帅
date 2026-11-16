@@ -1,0 +1,1205 @@
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- ================== 配置区 ==================
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1494735654205264063/eH1Oyr8QzQN95SL79jagEz05vLt_L9IjNuRBHiUJuAsCNdkWFjHfbwKA-Sy7JJyT0oKg"
+local SCRIPT_NAME = "Skin HUB v3.5"
+-- =============================================
+
+local totalUsageCount = 0
+
+-- 获取玩家头像URL
+local function getAvatarUrl(userId)
+    return "https://www.roblox.com/headshot-thumbnail/image?userId=" .. userId .. "&width=420&height=420&format=png"
+end
+
+local function reportUsage()
+    totalUsageCount = totalUsageCount + 1
+
+    local mapName = "未知地图"
+    pcall(function()
+        mapName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or "地图获取错误"
+    end)
+
+    local accountAge = player.AccountAge .. "天"
+    local avatarUrl = getAvatarUrl(player.UserId)
+
+    local embed = {
+        title = "脚本使用记录 柳叶",
+        description = "检测到有人执行了 " .. SCRIPT_NAME,
+        color = 65280,
+        fields = {
+            {name = "用户名", value = player.Name, inline = true},
+            {name = "显示名称", value = player.DisplayName or "无", inline = true},
+            {name = "脚本名称", value = SCRIPT_NAME, inline = true},
+            {name = "地图", value = mapName, inline = true},
+            {name = "账号年龄", value = accountAge, inline = true},
+            {name = "设备", value = "移动设备", inline = true},
+            {name = "执行时间", value = os.date("%Y-%m-%d %H:%M:%S", os.time()), inline = false}
+        },
+        thumbnail = {
+            url = avatarUrl
+        },
+        image = {
+            url = avatarUrl
+        },
+        timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ")
+    }
+
+    local data = {
+        username = "脚本使用记录",
+        embeds = {embed},
+        content = ""
+    }
+
+    local jsonData = HttpService:JSONEncode(data)
+
+    pcall(function()
+        HttpService:RequestAsync({
+            Url = WEBHOOK_URL,
+            Method = "POST",
+            Headers = {
+                ["Content-Type"] = "application/json",
+                ["User-Agent"] = "Roblox/WinInet"
+            },
+            Body = jsonData
+        })
+    end)
+end
+
+-- 每小时统计总使用次数
+local function reportTotalUsage()
+    local embed = {
+        title = "脚本使用统计（每小时）",
+        description = string.format("脚本：%s\n累计使用次数：**%d**", SCRIPT_NAME, totalUsageCount),
+        color = 3447003,
+        timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ")
+    }
+    local data = {
+        username = "使用统计",
+        embeds = {embed},
+        content = ""
+    }
+    local jsonData = HttpService:JSONEncode(data)
+    pcall(function()
+        HttpService:RequestAsync({
+            Url = WEBHOOK_URL,
+            Method = "POST",
+            Headers = {
+                ["Content-Type"] = "application/json",
+                ["User-Agent"] = "Roblox/WinInet"
+            },
+            Body = jsonData
+        })
+    end)
+end
+
+-- 立即上报一次
+reportUsage()
+
+-- 每5分钟上报用户信息（带头像）
+task.spawn(function()
+    while task.wait(300) do
+        reportUsage()
+    end
+end)
+
+-- 每1小时统计总使用次数
+task.spawn(function()
+    while task.wait(3600) do
+        reportTotalUsage()
+    end
+end)
+
+local function RunSequence()
+    wait(0.5)
+    local TweenService = game:GetService("TweenService")
+    local RunService = game:GetService("RunService")
+    local CoreGui = game:GetService("CoreGui")
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
+
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "ASE_Integrated_System"
+    ScreenGui.IgnoreGuiInset = true
+    pcall(function() ScreenGui.Parent = CoreGui end)
+    if not ScreenGui.Parent then ScreenGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui") end
+
+    local sound = Instance.new("Sound")
+    sound.SoundId = "rbxassetid://1846396531"
+    sound.Volume = 0.5
+    sound.Looped = true
+    sound.Parent = ScreenGui
+    sound:Play()
+
+    local MainContainer = Instance.new("CanvasGroup")
+    MainContainer.Size = UDim2.new(1, 0, 1, 0)
+    MainContainer.BackgroundTransparency = 1
+    MainContainer.GroupTransparency = 1
+    MainContainer.Parent = ScreenGui
+
+    local LoaderFrame = Instance.new("Frame")
+    LoaderFrame.Size = UDim2.new(1, 0, 1, 0)
+    LoaderFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    LoaderFrame.BorderSizePixel = 0
+    LoaderFrame.Parent = MainContainer
+
+    local KSPA_Text = Instance.new("TextLabel")
+    KSPA_Text.Size = UDim2.new(0.5, 0, 0, 120)
+    KSPA_Text.Position = UDim2.new(0, 0, 0.5, -60)
+    KSPA_Text.Text = "欢迎使用"
+    KSPA_Text.TextSize = 120
+    KSPA_Text.Font = Enum.Font.GothamBold
+    KSPA_Text.TextXAlignment = Enum.TextXAlignment.Right
+    KSPA_Text.TextTransparency = 1
+    KSPA_Text.TextColor3 = Color3.fromRGB(255, 255, 255)
+    KSPA_Text.Parent = LoaderFrame
+
+    local KSPA_Grad = Instance.new("UIGradient")
+    KSPA_Grad.Color = ColorSequence.new(
+        Color3.fromRGB(230, 57, 124),
+        Color3.fromRGB(26, 26, 29)
+    )
+    KSPA_Grad.Rotation = 90
+    KSPA_Grad.Parent = KSPA_Text
+
+    local KsPa_Text = Instance.new("TextLabel")
+    KsPa_Text.Size = UDim2.new(0.5, 0, 0, 120)
+    KsPa_Text.Position = UDim2.new(0.5, 10, 0.5, -60)
+    KsPa_Text.Text = " 柳叶制作"
+    KsPa_Text.TextSize = 120
+    KsPa_Text.Font = Enum.Font.GothamBold
+    KsPa_Text.TextXAlignment = Enum.TextXAlignment.Left
+    KsPa_Text.TextTransparency = 1
+    KsPa_Text.TextColor3 = Color3.fromRGB(255, 255, 255)
+    KsPa_Text.Parent = LoaderFrame
+
+    local K_Grad = Instance.new("UIGradient")
+    K_Grad.Color = ColorSequence.new(Color3.fromRGB(0, 0, 0), Color3.fromRGB(255, 255, 255))
+    K_Grad.Rotation = 90
+    K_Grad.Parent = KsPa_Text
+
+    -- 新增：禁止黑枪之神文字（样式与主标题一致，带流光效果）
+    local BanText = Instance.new("TextLabel")
+    BanText.Size = UDim2.new(0.7, 0, 0, 70)
+    BanText.Position = UDim2.new(0.5, 0, -0.15, 0)
+    BanText.AnchorPoint = Vector2.new(0.5, 0.5)
+    BanText.Text = "禁止黑枪之神拿此脚本装逼"
+    BanText.TextSize = 70
+    BanText.Font = Enum.Font.GothamBold
+    BanText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    BanText.BackgroundTransparency = 1
+    BanText.TextTransparency = 1
+    BanText.TextScaled = false
+    BanText.Parent = LoaderFrame
+
+    local BanGrad = Instance.new("UIGradient")
+    BanGrad.Color = ColorSequence.new(
+        Color3.fromRGB(245, 239, 234),
+        Color3.fromRGB(18, 46, 138)
+    )
+    BanGrad.Rotation = 90
+    BanGrad.Parent = BanText
+
+    -- 日志面板容器（深海蓝背景，50%透明度）
+    local LogFrame = Instance.new("Frame")
+    LogFrame.Size = UDim2.new(0, 100, 0, 100)
+    LogFrame.Position = UDim2.new(0.5, -225, 0.5, -160)
+    LogFrame.BackgroundColor3 = Color3.fromRGB(18, 46, 138)
+    LogFrame.BackgroundTransparency = 1
+    LogFrame.ClipsDescendants = true
+    LogFrame.Parent = MainContainer
+
+    local LogCorner = Instance.new("UICorner")
+    LogCorner.CornerRadius = UDim.new(0, 15)
+    LogCorner.Parent = LogFrame
+
+    local LogStroke = Instance.new("UIStroke")
+    LogStroke.Thickness = 2
+    LogStroke.Color = Color3.fromRGB(255, 255, 255)
+    LogStroke.Transparency = 1
+    LogStroke.Parent = LogFrame
+
+    local Content = Instance.new("ScrollingFrame")
+    Content.Size = UDim2.new(1, -40, 1, -100)
+    Content.Position = UDim2.new(0, 20, 0, 20)
+    Content.BackgroundTransparency = 1
+    Content.CanvasSize = UDim2.new(0, 0, 0, 0)
+    Content.ScrollBarThickness = 0
+    Content.Parent = LogFrame
+
+    local List = Instance.new("UIListLayout")
+    List.Padding = UDim.new(0, 10)
+    List.Parent = Content
+
+    local function AddUpdate(msg)
+        msg = msg or "未知消息"
+        local t = Instance.new("TextLabel")
+        t.Size = UDim2.new(1, 0, 0, 25)
+        t.BackgroundTransparency = 1
+        t.RichText = true
+        t.Text = "» " .. tostring(msg)
+        t.TextColor3 = Color3.fromRGB(245, 239, 234)
+        t.TextSize = 16
+        t.Font = Enum.Font.Ubuntu
+        t.TextXAlignment = Enum.TextXAlignment.Left
+        t.TextTransparency = 1
+        t.Parent = Content
+        task.defer(function()
+            Content.CanvasSize = UDim2.new(0, 0, 0, List.AbsoluteContentSize.Y)
+        end)
+        return t
+    end
+
+    local updateLabels = {}
+    updateLabels[1] = AddUpdate("欢迎使用 Skin Hub")
+    updateLabels[2] = AddUpdate("这里感谢小皮")
+    updateLabels[3] = AddUpdate("这里感谢Parke提供混淆")
+    updateLabels[4] = AddUpdate("柳叶喜欢GB🥰")
+    updateLabels[5] = AddUpdate("柳叶制作")
+    updateLabels[6] = AddUpdate("感谢您的游玩")
+    updateLabels[7] = AddUpdate("永远免费，永不跑路")
+
+    local CloseBtn = Instance.new("TextButton")
+    CloseBtn.Size = UDim2.new(0, 200, 0, 40)
+    CloseBtn.Position = UDim2.new(0.5, -100, 1, -55)
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    CloseBtn.BackgroundTransparency = 1
+    CloseBtn.Text = "已阅读/进入"
+    CloseBtn.TextColor3 = Color3.fromRGB(245, 239, 234)
+    CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.TextSize = 14
+    CloseBtn.TextTransparency = 1
+    CloseBtn.Parent = LogFrame
+
+    Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 8)
+
+    TweenService:Create(MainContainer, TweenInfo.new(0.8), {GroupTransparency = 0}):Play()
+    
+    task.wait(0.5)
+    
+    TweenService:Create(KSPA_Text, TweenInfo.new(1, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
+    TweenService:Create(KsPa_Text, TweenInfo.new(1, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
+    
+    local BanSlideIn = TweenService:Create(BanText, TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        Position = UDim2.new(0.5, 0, 0.22, 0),
+        TextTransparency = 0
+    })
+    BanSlideIn:Play()
+    
+    local rotate = RunService.RenderStepped:Connect(function()
+        KSPA_Grad.Offset = Vector2.new(0, math.sin(tick()*2)*0.2)
+        K_Grad.Offset = Vector2.new(0, -math.sin(tick()*2)*0.2)
+        BanGrad.Offset = Vector2.new(0, math.sin(tick()*2)*0.2)
+    end)
+    
+    task.wait(2)
+    
+    local sequence1 = TweenService:Create(KSPA_Text, TweenInfo.new(1.2, Enum.EasingStyle.Exponential, Enum.EasingDirection.InOut), {
+        Position = UDim2.new(-0.6, 0, 0.5, -60),
+        TextTransparency = 1
+    })
+    local sequence2 = TweenService:Create(KsPa_Text, TweenInfo.new(1.2, Enum.EasingStyle.Exponential, Enum.EasingDirection.InOut), {
+        Position = UDim2.new(1.1, 0, 0.5, -60),
+        TextTransparency = 1
+    })
+    sequence1:Play()
+    sequence2:Play()
+    TweenService:Create(LoaderFrame, TweenInfo.new(1.5, Enum.EasingStyle.Quart), {BackgroundTransparency = 1}):Play()
+    
+    task.wait(1.2)
+    
+    local BanSlideOut = TweenService:Create(BanText, TweenInfo.new(0.8, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+        Position = UDim2.new(0.5, 0, -0.25, 0),
+        TextTransparency = 1
+    })
+    BanSlideOut:Play()
+    
+    local logSequence = TweenService:Create(LogFrame, TweenInfo.new(1, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        BackgroundTransparency = 0.5,
+        Size = UDim2.new(0, 450, 0, 320)
+    })
+    local strokeSequence = TweenService:Create(LogStroke, TweenInfo.new(1), {Transparency = 0.8})
+    logSequence:Play()
+    strokeSequence:Play()
+    
+    task.wait(0.3)
+    
+    TweenService:Create(CloseBtn, TweenInfo.new(0.8, Enum.EasingStyle.Exponential), {
+        BackgroundTransparency = 0.9,
+        TextTransparency = 0
+    }):Play()
+    
+    task.spawn(function()
+        for i, obj in pairs(updateLabels) do
+            TweenService:Create(obj, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {TextTransparency = 0}):Play()
+            task.wait(0.15)
+        end
+    end)
+    
+    -- 创建付费信息面板的引用
+    local paidPanel = nil
+    
+    -- 等待日志面板动画完成后再创建付费面板并从下方滑入左侧
+    logSequence.Completed:Connect(function()
+        if paidPanel then return end -- 防止重复创建
+        
+        -- 创建付费面板主体
+        paidPanel = Instance.new("Frame")
+        paidPanel.Size = UDim2.new(0, 280, 0, 350)
+        paidPanel.Position = UDim2.new(0, 20, 1.2, 0) -- 初始在屏幕下方之外
+        paidPanel.AnchorPoint = Vector2.new(0, 0.5) -- 左边缘锚点，垂直中心锚点
+        paidPanel.BackgroundColor3 = Color3.fromRGB(18, 46, 138)
+        paidPanel.BackgroundTransparency = 0.6
+        paidPanel.BorderSizePixel = 0
+        paidPanel.ClipsDescendants = true
+        paidPanel.Parent = MainContainer
+        
+        local panelCorner = Instance.new("UICorner")
+        panelCorner.CornerRadius = UDim.new(0, 12)
+        panelCorner.Parent = paidPanel
+        
+        local panelStroke = Instance.new("UIStroke")
+        panelStroke.Thickness = 2
+        panelStroke.Color = Color3.fromRGB(255, 255, 255)
+        panelStroke.Transparency = 0.3
+        panelStroke.Parent = paidPanel
+        
+        -- 滚动框架
+        local scrollFrame = Instance.new("ScrollingFrame")
+        scrollFrame.Size = UDim2.new(1, -20, 1, -20)
+        scrollFrame.Position = UDim2.new(0, 10, 0, 10)
+        scrollFrame.BackgroundTransparency = 1
+        scrollFrame.BorderSizePixel = 0
+        scrollFrame.ScrollBarThickness = 6
+        scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255)
+        scrollFrame.Parent = paidPanel
+        
+        -- 文本标签
+        local contentText = Instance.new("TextLabel")
+        contentText.Size = UDim2.new(1, -10, 0, 0)
+        contentText.Position = UDim2.new(0, 5, 0, 0)
+        contentText.BackgroundTransparency = 1
+        contentText.TextWrapped = true
+        contentText.TextXAlignment = Enum.TextXAlignment.Left
+        contentText.TextYAlignment = Enum.TextYAlignment.Top
+        contentText.TextColor3 = Color3.fromRGB(245, 239, 234)
+        contentText.Font = Enum.Font.Ubuntu
+        contentText.TextSize = 13
+        contentText.Text = [[Secular Hub［付费版］
+
+售价14
+购买请加↓
+3974338461［柳叶］
+
+支持服务器：74
+
+1.通缉  2.寻宝模拟器
+3.死亡球  4.zoo or OOF
+5.BF  6.在超级商店中存活下来
+7.Last Run  8.战斗勇士
+9.球拍对手  10.建造一架飞机
+11.亡命速递  12.最坚强的战场
+13.Ohio  14.监狱人生
+15.犯罪  16.恐鬼症/恶魔学
+17.闪光  18.死铁轨
+19.极速传奇  20.终极战场
+21.赛马娘  22.修仙模拟器
+23.力量传奇  24.跳跃对决
+25.忍者传奇  26.射击并吃掉noob
+27.在森林里的99夜  28.锻造
+29.暴力区  30.拥有一个鱼池
+31.战争大亨  32.一次尘土飞扬的旅行
+33.元素力量大亨  34.凌晨三点以后
+35.种植花园  36.格蕾丝
+37.住宅大屠杀  38.POOP大POOP💩
+39.普通血色娃娃格斗  40.模仿者
+41.被遗弃  42.莱克星顿
+43.13号航站楼  44.压力
+45.黑暗欺骗  46.和平饭店
+47.chain  48.原始追求
+49.深渊Beta  50.Doors
+51.一路向西  52.Draw me(画我)暂时修复中
+53.找出谁打了一巴掌  54.捕捉并驯服
+55.点击模拟器  56.沉默的剑客
+57.建造一个动物园  58.挖穿后院
+59.手枪竞技场  60.血腥的游乐场
+61.索纳里亚  62.活到七天
+63.假冒大亨  64.终极采矿大亨
+65.GB  66.泰坦钓鱼
+67.nico下一个机器人  68.自然灾害
+69.零售大亨  70.停电
+71.紧急汉堡的  72.撕咬之夜
+73.防御  74.寻找巨型鱼
+
+持续更新
+更新依客户需求
+
+主群982557623]]
+        contentText.TextScaled = false
+        contentText.Parent = scrollFrame
+        
+        -- 自动调整文本高度并设置画布大小
+        contentText.Size = UDim2.new(1, -10, 0, 0)
+        contentText.AutomaticSize = Enum.AutomaticSize.Y
+        task.defer(function()
+            scrollFrame.CanvasSize = UDim2.new(0, 0, 0, contentText.AbsoluteSize.Y + 10)
+        end)
+        
+        -- 移入动画：从下方滑入到左侧目标位置（垂直中心与弹窗对齐）
+        local targetPosition = UDim2.new(0, 20, 0.5, 0) -- 左边缘X=20，垂直中心在屏幕中央
+        local slideIn = TweenService:Create(paidPanel, TweenInfo.new(0.8, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Position = targetPosition,
+            BackgroundTransparency = 0.5
+        })
+        slideIn:Play()
+    end)
+    
+    local clicked = false
+    CloseBtn.MouseButton1Click:Connect(function()
+        if clicked then return end
+        clicked = true
+        
+        -- 如果付费面板存在，先让它向上滑出
+        local function finishClose()
+            local closeTween = TweenService:Create(MainContainer, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.InOut), {
+                Size = UDim2.new(0, 0, 0, 0),
+                Position = UDim2.new(0.5, 0, 0.5, 0),
+                GroupTransparency = 1
+            })
+            closeTween:Play()
+            closeTween.Completed:Wait()
+            
+            rotate:Disconnect()
+            sound:Stop()
+            sound:Destroy()
+            ScreenGui:Destroy()
+        end
+        
+        if paidPanel and paidPanel.Parent then
+            local slideOut = TweenService:Create(paidPanel, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {
+                Position = UDim2.new(0, 20, -0.5, 0),
+                BackgroundTransparency = 1
+            })
+            slideOut:Play()
+            slideOut.Completed:Connect(function()
+                finishClose()
+            end)
+        else
+            finishClose()
+        end
+    end)
+    
+    repeat task.wait() until clicked
+end
+
+RunSequence()
+
+local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+
+WindUI:Localization({
+    Enabled = true,
+    Prefix = "loc:",
+    DefaultLanguage = "zh-cn",
+    Translations = {
+        ["ru"] = {
+            ["WINDUI_EXAMPLE"] = "WindUI Пример",
+            ["WELCOME"] = "Добро пожаловать в WindUI!",
+            ["LIB_DESC"] = "Библиотека для создания красивых интерфейсов",
+            ["SETTINGS"] = "Настройки",
+            ["APPEARANCE"] = "Внешний вид",
+            ["FEATURES"] = "Функционал",
+            ["UTILITIES"] = "Инструменты",
+            ["UI_ELEMENTS"] = "UI Элементы",
+            ["CONFIGURATION"] = "Конфигурация",
+            ["SAVE_CONFIG"] = "Сохранить конфигурацию",
+            ["LOAD_CONFIG"] = "Загрузить конфигурацию",
+            ["THEME_SELECT"] = "Выберите тему",
+            ["TRANSPARENCY"] = "Прозрачность окна"
+        },
+        ["en"] = {
+            ["WINDUI_EXAMPLE"] = "WindUI Example",
+            ["WELCOME"] = "Welcome to WindUI!",
+            ["LIB_DESC"] = "Beautiful UI library for Roblox",
+            ["SETTINGS"] = "Settings",
+            ["APPEARANCE"] = "Appearance",
+            ["FEATURES"] = "Features",
+            ["UTILITIES"] = "Utilities",
+            ["UI_ELEMENTS"] = "UI Elements",
+            ["CONFIGURATION"] = "Configuration",
+            ["SAVE_CONFIG"] = "Save Configuration",
+            ["LOAD_CONFIG"] = "Load Configuration",
+            ["THEME_SELECT"] = "Select Theme",
+            ["TRANSPARENCY"] = "Window Transparency"
+        },
+        ["zh-cn"] = {
+            ["WINDUI_EXAMPLE"] = "WindUI 示例",
+            ["WELCOME"] = "欢迎使用 WindUI！",
+            ["LIB_DESC"] = "为 Roblox 设计的精美 UI 库",
+            ["SETTINGS"] = "设置",
+            ["APPEARANCE"] = "外观",
+            ["FEATURES"] = "功能",
+            ["UTILITIES"] = "工具",
+            ["UI_ELEMENTS"] = "UI 元素",
+            ["CONFIGURATION"] = "配置",
+            ["SAVE_CONFIG"] = "保存配置",
+            ["LOAD_CONFIG"] = "加载配置",
+            ["THEME_SELECT"] = "选择主题",
+            ["TRANSPARENCY"] = "窗口透明度"
+        }
+    }
+})
+
+WindUI.TransparencyValue = 0.2
+WindUI:SetTheme("Indigo")
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+local lp = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+local pgui = lp:WaitForChild("PlayerGui")
+local mouse = lp:GetMouse()
+
+-- ==================== 功能文本全局存储表 G ====================
+local G = {
+    WindowTitle = "Skin HUB v3.5",
+    WindowAuthor = "柳叶制作",
+    TopbarTheme = "主题切换",
+    SectionFeatures = "功能",
+    SectionKill = "杀戮光环",
+    SectionESP = "透视",
+    SectionCareer = "职业功能",
+    SectionOther = "其他",
+    TabMain = "主要",
+    TabAuto = "自动功能",
+    TabFly = "飞行",
+    TabBrush = "获取",
+    TabKill = "光环",
+    TabZombieESP = "僵尸透视",
+    TabPlayerESP = "玩家透视",
+    TabEngineer = "工兵",
+    TabOfficer = "军官/线列",
+    TabAutoShoot = "自动射击",
+    TabDoctor = "医生",
+    TabChaplain = "牧师",
+    TabOther = "其它",
+    ToggleSpeedTitle = "启用速度调整",
+    ToggleSpeedDesc = "速度控制",
+    SliderSpeedTitle = "玩家速度",
+    SliderSpeedDesc = "调整移动速度",
+    SliderAutoFaceRangeTitle = "自动转向范围",
+    SliderAutoFaceRangeDesc = "僵尸进入距离时自动转向",
+    ToggleAutoFaceTitle = "自动转向",
+    ToggleAutoFaceDesc = "自动面向范围内的僵尸",
+    ToggleSkipBarrelTitle = "跳过自爆僵尸",
+    ToggleSkipBarrelDesc = "开启后不会转向自爆",
+    ToggleAutoJumpTitle = "自动跳跃",
+    ToggleAutoJumpDesc = "自动跳跃",
+    SliderAutoJumpHeightTitle = "自动跳跃高度",
+ local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- ================== 配置区 ==================
+local WEBHOOK_URL = "https://discord.com/api/webhooks/1494735654205264063/eH1Oyr8QzQN95SL79jagEz05vLt_L9IjNuRBHiUJuAsCNdkWFjHfbwKA-Sy7JJyT0oKg"
+local SCRIPT_NAME = "Skin HUB v3.5"
+-- =============================================
+
+local totalUsageCount = 0
+
+-- 获取玩家头像URL
+local function getAvatarUrl(userId)
+    return "https://www.roblox.com/headshot-thumbnail/image?userId=" .. userId .. "&width=420&height=420&format=png"
+end
+
+local function reportUsage()
+    totalUsageCount = totalUsageCount + 1
+
+    local mapName = "未知地图"
+    pcall(function()
+        mapName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name or "地图获取错误"
+    end)
+
+    local accountAge = player.AccountAge .. "天"
+    local avatarUrl = getAvatarUrl(player.UserId)
+
+    local embed = {
+        title = "脚本使用记录 柳叶",
+        description = "检测到有人执行了 " .. SCRIPT_NAME,
+        color = 65280,
+        fields = {
+            {name = "用户名", value = player.Name, inline = true},
+            {name = "显示名称", value = player.DisplayName or "无", inline = true},
+            {name = "脚本名称", value = SCRIPT_NAME, inline = true},
+            {name = "地图", value = mapName, inline = true},
+            {name = "账号年龄", value = accountAge, inline = true},
+            {name = "设备", value = "移动设备", inline = true},
+            {name = "执行时间", value = os.date("%Y-%m-%d %H:%M:%S", os.time()), inline = false}
+        },
+        thumbnail = {
+            url = avatarUrl
+        },
+        image = {
+            url = avatarUrl
+        },
+        timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ")
+    }
+
+    local data = {
+        username = "脚本使用记录",
+        embeds = {embed},
+        content = ""
+    }
+
+    local jsonData = HttpService:JSONEncode(data)
+
+    pcall(function()
+        HttpService:RequestAsync({
+            Url = WEBHOOK_URL,
+            Method = "POST",
+            Headers = {
+                ["Content-Type"] = "application/json",
+                ["User-Agent"] = "Roblox/WinInet"
+            },
+            Body = jsonData
+        })
+结束)
+结束
+
+-- 每小时统计总使用次数
+local function reportTotalUsage()
+    local embed = {
+        title = "脚本使用统计（每小时）",
+        description = string.format("脚本：%s\n累计使用次数：**%d**", SCRIPT_NAME, totalUsageCount),
+        color = 3447003,
+        timestamp = os.date("!%Y-%m-%dT%H:%M:%SZ")
+    }
+    local data = {
+        username = "使用统计",
+        embeds = {embed},
+        content = ""
+    }
+    local jsonData = HttpService:JSONEncode(data)
+    pcall(function()
+        HttpService:RequestAsync({
+            Url = WEBHOOK_URL,
+            Method = "POST",
+            Headers = {
+                ["Content-Type"] = "application/json",
+                ["User-Agent"] = "Roblox/WinInet"
+            },
+            Body = jsonData
+        })
+结束)
+结束
+
+-- 立即上报一次
+reportUsage()
+
+-- 每5分钟上报用户信息（带头像）
+task.spawn(函数()
+    while task.wait(300) do
+        reportUsage()
+结束
+结束)
+
+-- 每1小时统计总使用次数
+task.spawn(函数()
+当task.wait(3600)执行时
+reportTotalUsage()
+结束
+结束)
+
+局部函数RunSequence()
+等待(0.5)
+本地TweenService=游戏：GetService("TweenService")
+本地RunService=game:GetService("RunService")
+本地CoreGui=游戏：GetService("CoreGui")
+本地玩家=游戏：GetService(“玩家”)
+local LocalPlayer=players.LocalPlayer
+
+本地ScreenGui=Instance.new("ScreenGui")
+ScreenGuui.Name="ASE_Integrated_System"
+ScreenGui.IgnoreGuiInset=true
+pcall(函数()ScreenGui.Parent=CoreGui结束)
+如果不是ScreenGui。parent，然后ScreenGui。parent=players.LocalPlayer:WaitForChild("PlayerGui")结束
+
+本地声音=Instance.new("Sound")
+sound.SoundId="rbxassetid://1846396531"
+声音.音量=0.5
+sound.Looped=true
+sound.Parent=ScreenGui
+声音：播放()
+
+本地MainContainer=Instance.new("CanvasGroup")
+MainContainer.Size=UDim2.new(1，0，1，0)
+主容器.背景透明度=1
+主容器. 组透明度=1
+MainContainer.Parent=ScreenGui
+
+本地LoaderFrame=Instance.new("Frame")
+LoaderFrame.Size=UDim2.new(1，0，1，0)
+LoaderFrame.BackgroundColor3=Color3。来自RGB(0，0，0)
+LoaderFrame.BorderSizePixel=0
+LoaderFrame.Parent=MainContainer
+
+本地KSPA_Text=Instance.new("TextLabel")
+KSPA_Text.Size=UDim2.new(0.5，0，0，120)
+KSPA_Text.Position=UDim2.new(0，0，0.5，-60)
+KSPA_Text.Text="欢迎使用"
+这里是 KSPA_Text
+字体: 哥特姆
+在 KSPA_Text.TextXAlignment=枚举.
+KSPA_Text.TextTransparency=1
+KSPA_Text.TextColor3=Color3.fromRGB(255，255，255)
+KSPA_Text.Parent=LoaderFrame
+
+本地KSPA_Grad=Instance.new("UIGradient")
+KSPA_Grad.Color=ColorSequence.new(
+颜色3.来自RGB(230、57、124)，
+Color3.FromRGB(26、26、29)
+    )
+现在,我们可以把它变成一个"KSPA_Grad.
+KSPA_Grad.Parent=KSPA_Text
+
+本地KSPA_Text=Instance.new("TextLabel")
+KSPA_Text.Size=UDim2.new(0.5，0，0，120)
+KSPA_Text.Position=UDim2.new(0.5，10，0.5，-60)
+柳叶制作柳叶制作
+这里是 KSPA_Text
+字体: 哥特姆
+KSPA_Text.TextXAlignment=枚举.TextXAlignment.Left
+KSPA_Text.TextTransparency=1
+KSPA_Text.TextColor3=Color3.fromRGB(255，255，255)
+KSPA_Text.Parent=LoaderFrame
+
+本地K_Grad=Instance.new("UIGradient")
+K_Grad.Color=ColorSequence.new(Color3.fromRGB(0，0，0)，Color3.fromRGB(255，255，255))
+平移k度=90
+K_Grad.Parent=KSPA_Text
+
+    -- 新增：禁止黑枪之神文字（样式与主标题一致，带流光效果）
+地方 BanText = Instance.new (文本标签)
+现在,我们可以把它变成一个新的世界.
+BanText.Position=UDim2.new(0.5，0，-0.15，0)
+BanText.AnchorPoint=Vector2.new(0.5，0.5)
+BanText.Text="禁止黑枪之神拿这部剧本装逼
+如何使用 BanText
+字体: 哥特姆
+BanText.TextColor3=Color3.fromRGB(255，255，255)
+后台透明度=1
+BanText.TextTextTransparency=1
+没有任何的字符
+没有任何的
+
+本地BanGrad=Instance.new("UIGradient")
+BanGrad.Color=ColorSequence.new(
+Color3.FromRGB(245、239、234)，
+Color3.FromRGB(18、46、138)
+    )
+班格拉德.旋转率=90
+BanGrad.Parent=BanText
+
+    -- 日志面板容器（深海蓝背景，50%透明度）
+本地logframe=Instance.new("Frame")
+LogFrame.Size=UDim2.new(0，100，0，100)
+LogFrame.Position=UDim2.new(0.5，-225，0.5，-160)
+LogFrame.BackgroundColor3=Color3.fromRGB(18、46、138)
+LogFrame.BackgroundTransparency=1
+后代的照片
+LogFrame.Parent=MainContainer
+
+本地LogCorner=Instance.new("UICorner")
+LogCorner.CornerRadius=UDim.new(0，15)
+LogCorner.Parent=logframe
+
+本地LogStroke=Instance.new("UIStroke")
+LogStroke.Thickness=2
+LogStroke.Color=Color3.fromRGB(255，255，255)
+LogStroke.Transparency=1
+LogStroke.Parent=logframe
+
+本地内容=Instance.new("ScrollingFrame")
+Content.Size=UDim2.new(1，-40，1，-100)
+Content.Position=UDim2.new(0，20，0，20)
+Content.BackgroundTransparency=1
+Content.CanvasSize=UDim2.new(0，0，0)
+Content.ScrollBarThickness=0
+Content.Parent=logframe
+
+本地列表=Instance.new("UIListLayout")
+List.Padding=UDim.new(0，10)
+List.Parent=内容
+
+地方函数addUpdate
+消息=消息或"未知消息"
+对于"TextLabel"的使用,
+测试结果的值是:
+t.BackgroundTransparency=1
+t.RichText=true
+,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+t.TextColor3=Color3.fromRGB(245、239、234)
+t.TextSize=16
+T.Font=枚举.Font.Ubuntu
+t.TextXAlignment=枚举.TextXAlignment.Left
+t.TextTransparency=1
+T.Parent=内容
+task.defer(函数()
+内容。CanvasSize=UDim2。new(0，0，0，List.AbsoluteContentSize.Y)
+结束)
+返回t
+结束
+
+本地updateLabels={}
+updateLabels[1]=addUpdate("欢迎使用蒙皮座”)
+updateLabels[2]=addUpdate("这里感谢小皮")
+updateLabels[3]=addUpdate("这里感谢Parke提供混淆")
+柳叶喜欢的
+updatelabels[5]=addupdate(《柳叶制作》)
+updateLabels[6]=addUpdate("感谢您的游玩")
+updateLabels[7]=addUpdate("永远免费，永不跑路")
+
+本地CloseBtn=Instance.new("TextButton")
+CloseBtn.Size=UDim2.new(0，200，0，40)
+CloseBtn.Position=UDim2.new(0.5，-100，1，-55)
+CloseBtn.BackgroundColor3=Color3.fromRGB(255，255，255)
+CloseBtn.BackgroundTransparency=1
+CloseBtn.Text="已阅读/进入"
+CloseBtn.TextColor3=Color3.fromRGB(245、239、234)
+CloseBtn.Font=枚举.Font.GothamBold
+CloseBtn.TextSize=14
+CloseBtn.TextTransparency=1
+CloseBtn.Parent=logframe
+
+实例。新建(“UICorner”，CloseBtn)。CornerRadius=UDIM。新(0，8)
+
+TweenService：创建(MainContainer，TweenInfo.new(0.8)，{GroupTransparency=0})：播放()
+    
+task.wait(0.5)
+    
+TweenService：创建(KSPA_Text，TweenInfo.new(1，枚举.EasingStyle.指数，枚举.EasingDirection.Out)，{TextTransparency=0})：播放()
+TweenService：创建(KSPA_Text，TweenInfo.new(1，枚举.EasingStyle.指数，枚举.EasingDirection.Out)，{TextTransparency=0})：播放()
+    
+本地BanSlideIn=TweenService：创建(BanText，TweenInfo.new(1，枚举.EasingStyle.Back，枚举.EasingDirection.Out)，{
+position=UDim2.new(0.5，0，0.22，0)，
+TextTransparency=0
+    })
+BanSlideIn:Play()
+    
+局部rotate=RunService.RenderSteped：连接(函数()
+KSPA_Grad.offset=Vector2.新建(0，Math.Sin(tick()*2)*0.2)
+K_Grad.offset=Vector2.new(0，-math.sin(tick()*2)*0.2)
+BanGrad.Offset=Vector2。New(0，Math.sin(tick()*2)*0.2)
+结束)
+    
+task.wait(2)
+    
+本地sequence1=TweenService：创建(KSPA_Text，TweenInfo.new(1.2，枚举.EasingStyle.exponential，枚举.EasingDirection.InOut)，{
+position=UDim2.new(-0.6，0，0.5，-60)，
+TextTransparency=1
+    })
+本地sequence2=TweenService：创建(KSPA_Text，TweenInfo.new(1.2，枚举.EasingStyle.exponential，枚举.EasingDirection.InOut)，{
+position=UDim2.new(1.1，0，0.5，-60)，
+TextTransparency=1
+    })
+sequence1:Play()
+sequence2:Play()
+TweenService：创建(LoaderFrame，TweenInfo.new(1.5，Enum.EasingStyle.Quart)，{BackgroundTransparency=1})：播放()
+    
+task.wait(1.2)
+    
+本地BanSlideOut=TweenService：创建(BanText，TweenInfo.new(0.8，枚举.EasingStyle.Quad，枚举.EasingDirection.In)，{
+position=UDim2.new(0.5，0，-0.25，0)，
+TextTransparency=1
+    })
+BanSlideOut：播放()
+    
+本地logSequence=TweenService：创建(logframe，TweenInfo.new(1，Enum.EasingStyle.Back，Enum.EasingDirection.Out)，{
+背景透明度=0.5，
+size=UDim2.new(0，450，0，320)
+    })
+局部strokeSequence=TweenService：创建(LogStroke，TweenInfo.new(1)，{Transparency=0.8})
+logSequence:Play()
+strokeSequence：广告()
+    
+task.wait(0.3)
+    
+TweenService：创建(CloseBtn，TweenInfo.new(0.8，Enum.EasingStyle.Exponential)，{
+背景透明度=0.9，
+TextTransparency=0
+})：Play()
+    
+任务.派生(函数()
+对于i，成对的obj(updateLabels)
+TweenService：创建(obj，TweenInfo.new(0.5，Enum.EasingStyle.Quart)，{TextTransparency=0})：播放()
+task.wait(0.15)
+结束
+结束)
+    
+    -- 创建付费信息面板的引用
+本地paidPanel=nil
+    
+    -- 等待日志面板动画完成后再创建付费面板并从下方滑入左侧
+logSequence.Completed：连接(函数()
+        if paidPanel then return end -- 防止重复创建
+        
+        -- 创建付费面板主体
+paidPanel=Instance.new("Frame")
+paidPanel.Size=UDim2.new(0，280，0，350)
+payedPanel.Position=UDim2.new(0，20，1.2，0)--初始在屏幕下方之外
+        paidPanel.AnchorPoint = Vector2.new(0, 0.5) -- 左边缘锚点，垂直中心锚点
+paidPanel.BackgroundColor3=Color3.fromRGB(18、46、138)
+paidPanel.BackgroundTransparency=0.6
+paidPanel.BorderSizePixel=0
+没有任何问题.
+paidPanel.Parent=MainContainer
+        
+本地面板Corner=Instance.new(“UICorner”)
+panelCorner.CornerRadius=UDim.new(0，12)
+panelCorner.Parent=paidPanel
+        
+本地面板Stroke=Instance.new("UIStroke")
+面板行程.厚度=2
+panelStroke.Color=Color3.fromRGB(255，255，255)
+panelStroke.Transparency=0.3
+panelStroke.Parent=paidPanel
+        
+        -- 滚动框架
+本地ScrollFrame=Instance.new("ScrollingFrame")
+scrollFrame.Size=UDim2.new(1，-20，1，-20)
+scrollFrame.Position=UDim2.new(0，10，0，10)
+scrollFrame.BackgroundTransparency=1
+scrollFrame.BorderSizePixel=0
+scrollFrame.ScrollBarThickness=6
+scrollFrame.ScrollBarImageColor3=Color3.fromRGB(255，255，255)
+scrollFrame.Parent=paidPanel
+        
+        -- 文本标签
+本地ContentText=Instance.new("TextLabel")
+contentText.Size=UDim2.new(1，-10，0，0)
+        contentText.Position = UDim2.new(0, 5, 0, 0)
+contentText.BackgroundTransparency=1
+contentText.TextWrapped=true
+contentText.TextXAlignment=枚举.TextXAlignment.Left
+contentText.TextYAlignment=枚举。TextYAlignment.Top
+contentText.TextColor3=Color3.fromRGB(245、239、234)
+        contentText.Font = Enum.Font.Ubuntu
+        contentText.TextSize = 13
+contentText.Text=[[世俗中枢[付费版]
+
+售价14
+购买请加↓
+3974338461[柳叶]
+
+支持服务器：74
+
+1.通缉  2.寻宝模拟器
+3.死亡球  4.zoo or OOF
+5.BF  6.在超级商店中存活下来
+7.Last Run  8.战斗勇士
+9.球拍对手  10.建造一架飞机
+11.亡命速递  12.最坚强的战场
+13.Ohio  14.监狱人生
+15.犯罪  16.恐鬼症/恶魔学
+17.闪光  18.死铁轨
+19.极速传奇  20.终极战场
+21.赛马娘  22.修仙模拟器
+23.力量传奇  24.跳跃对决
+忍者传奇26. 射击并吃掉noob
+27.在森林里的99夜  28.锻造
+29.暴力区  30.拥有一个鱼池
+31.战争大亨  32.一次尘土飞扬的旅行
+33.元素力量大亨  34.凌晨三点以后
+35.种植花园  36.格蕾丝
+37.住宅大屠杀  38.POOP大POOP💩
+39.普通血色娃娃格斗  40.模仿者
+41.被遗弃  42.莱克星顿
+43.13号航站楼  44.压力
+45.黑暗欺骗  46.和平饭店
+第47节 第48节 原始追求
+49.深渊Beta  50.Doors
+51.一路向西  52.Draw me(画我)暂时修复中
+53.找出谁打了一巴掌  54.捕捉并驯服
+55.点击模拟器  56.沉默的剑客
+57.建造一个动物园  58.挖穿后院
+59.手枪竞技场  60.血腥的游乐场
+61.索纳里亚  62.活到七天
+63.冒头大亨64.终极采矿大亨
+65.GB  66.泰坦钓鱼
+67.nico下一个机器人  68.自然灾害
+69.零售大亨  70.停电
+71.紧急汉堡的  72.撕咬之夜
+73. 防御 74. 寻找巨型鱼
+
+持续更新
+更新依客户需求
+
+主群982557623]]
+contentText.TextScaled=false
+contentText.Parent=ScrollFrame
+        
+        -- 自动调整文本高度并设置画布大小
+contentText.Size=UDim2.new(1，-10，0，0)
+contentText.AutomaticSize=枚举.AutomaticSize.Y
+函数的值是 ()
+ScrollFrame.CanvasSize=UDim2。new(0，0，0，ContentText.AbsoluteSize.y+10)
+结束)
+        
+        -- 移入动画：从下方滑入到左侧目标位置（垂直中心与弹窗对齐）
+local TargetPosition=UDim2.new(0，20，0.5，0)--左边缘X=20，垂直中心在屏幕中央
+本地slidin=TweenService：创建(paidPanel，TweenInfo.new(0.8，Enum.EasingStyle.Back，Enum.EasingDirection.Out)，{
+position=TargetPosition，
+BackgroundTransparency=0.5
+        })
+幻灯片：播放()
+结束)
+    
+本地单击=false
+CloseBtn.MouseButton1Click:Connect(函数()
+如果单击，则返回结束
+clicked=true
+        
+-- 如果付费面板存在，先让它向上滑出
+局部函数完成关闭()
+本地closeTween=TweenService：创建(主容器，TweenInfo.new(0.5，枚举.EasingStyle.Back，枚举.EasingDirection.InOut)，{
+size=UDim2.new(0，0，0，0)，
+position=UDim2.new(0.5，0，0.5，0)，
+GroupTransparency=1
+            })
+closeTween：播放()
+closeTween.Completed:Wait()
+            
+旋转：断开()
+声音：停止()
+声音：销毁()
+ScreenGui：销毁()
+结束
+        
+如果paidPanel和paidPanel.parent
+本地滑出=TweenService：创建(paidPanel，TweenInfo.new(0.5，Enum.EasingStyle.Quad，Enum.EasingDirection.In)，{
+position=UDim2.new(0，20，-0.5，0)，
+BackgroundTransparency=1
+            })
+滑出：播放()
+滑出完成：连接(函数()
+finishClose()
+结束)
+其他
+finishClose()
+结束
+结束)
+    
+重复任务.Wait()直到单击
+结束
+
+RunSequence()
+
+本地WindUI=loadstring(游戏：HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+
+WindUI:Localization({
+    Enabled = true,
+    Prefix = "loc:",
+默认语言="zh-cn"，
+翻译={
+        ["ru"] = {
+            ["WINDUI_EXAMPLE"] = "WindUI Пример",
+"WELCOME"="欢迎来到WindUI!"
+["LIB_DESC"] ="一个用于创建漂亮界面的库",
+            ["SETTINGS"] = "Настройки",
+            ["APPEARANCE"] = "Внешний вид",
+            ["FEATURES"] = "Функционал",
+            ["UTILITIES"] = "Инструменты",
+            ["UI_ELEMENTS"] = "UI Элементы",
+            ["CONFIGURATION"] = "Конфигурация",
+["SAVE_CONFIG"]="保存配置"，
+["LOAD_CONFIG"]="下载配置"，
+            ["THEME_SELECT"] = "Выберите тему",
+"透明度" = "窗口的透明度"
+        },
+        ["en"] = {
+["WINDUI_EXAMPLE"]="WindUI示例"，
+["WELCOME"]="欢迎来到WindUI！"，
+["LIB_DESC"]="Roblox的漂亮UI库"，
+["设置"]="设置"，
+["外观"]="外观"，
+["FEATURES"]="Features"，
+["公用设施"]="公用设施"，
+["UI_ELEMENTS"]="UI元素"，
+["CONFIGURATION"]="配置"，
+["SAVE_CONFIG"]="保存配置"，
+["LOAD_CONFIG"]="负载配置"，
+["THEME_SELECT"]="选择主题"，
+["透明"]="窗口透明度"
+        },
+["zh-cn"]={
+["WINDUI_EXAMPLE"]="WindUI示例"，
+["WELCOME"]="欢迎使用Windui！"，
+["LIB_DESC"]="为ROBLOX设计的精美UI库"，
+["设置"]="设置"，
+["外观"]="外观"，
+["功能"]="功能"，
+["公用设施"]="工具"，
+["UI_ELEMENTS"]="UI元素"，
+["CONFIGURATION"]="配置"，
+["SAVE_CONFIG"]="保存配置"，
+["LOAD_CONFIG"]="加载配置"，
+["THEME_SELECT"]="选择主题"，
+["透明"]="窗口透明度"
+        }
+    }
+})
+
+WindUI.TransparencyValue=0.2
+WindUI:SetTheme("Indigo")
+
+本地玩家=游戏：GetService(“玩家”)
+本地RunService=game:GetService("RunService")
+本地TweenService=游戏：GetService("TweenService")
+本地UserInputService=game:GetService("UserInputService")
+本地工作区=游戏：GetService(“工作区”)
+local lp=players.LocalPlayer
+本地摄像机=workspace.CurrentCamera
+本地pgui=lp:WaitForChild("PlayerGui")
+本地鼠标=lp:GetMouse()
+
+--====================功能文本全局存储表G ====================
+局部G={
+WindowTitle="Skin HUB v3.5"，
+window author="柳叶制作”，
+TopbarTheme="主题切换"，
+SectionFeatures="功能"，
+SectionKill="杀戮光环"，
+    SectionESP = "透视",
+SectionCareer="职业功能"，
+SectionOther="其他"，
+TabMain="主要"，
+TabAuto="自动功能"，
+TabFly="飞行"，
+    TabBrush = "获取",
+    TabKill = "光环",
+    TabZombieESP = "僵尸透视",
+TabPlayerESP="玩家透视"，
+TabEngineer="工兵"，
+TabOfficer="军官/线列"，
+TabAutoShoot="自动射击"，
+TabDoctor="医生"，
+TabChaplain="牧师"，
+TabOther="其它"，
+ToggleSpeedTitle="启用速度调整"，
+ToggleSpeedDesc="速度控制"，
+sliderspeedtitle="玩家速度"，
+SliderSpeedDesc="调整移动速度"，
+SliderAutoFaceRangeTitle="自动转向范围"，
+SliderAutoFaceRangeDesc="僵尸进入距离时自动转向"，
+ToggleAutoFaceTitle="自动转向"，
+ToggleAutoFaceDesc="自动面向范围内的僵尸"，
+ToggleSkipBarrelTitle="跳过自爆僵尸"，
+ToggleSkipBarrelDesc="开启后不会转向自爆"，
+ToggleAutoJumpTitle="自动跳跃"，
+ToggleAutoJumpDesc="自动跳跃"，
+sliderautojumpheighttitle="自动跳跃高度"，
+ 
